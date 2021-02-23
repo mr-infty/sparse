@@ -1,5 +1,4 @@
 #include <string>
-#include <iostream>
 #include <vector>
 #include <optional>
 #include <cctype>
@@ -10,9 +9,6 @@
 using std::vector;
 using std::string;
 using std::optional;
-using std::cin;
-using std::cout;
-using std::endl;
 
 Parser one_char = [](const iter start, const iter end)
 {
@@ -41,13 +37,10 @@ Parser restrict(const Parser &parser, std::function<bool(const iter, const iter)
 	};
 }
 
-// Parses one letter.
 Parser letter = restrict(one_char, [](const iter start, const iter end) { return std::isalpha(*start); });
 
-// Parses one digit.
 Parser digit = restrict(one_char, [](const iter start, const iter end) { return std::isdigit(*start); });
 
-// The sum ("or") of two parsers.
 Parser Either(const Parser &a, const Parser &b)
 {
 	return [a,b] (const iter start, const iter end) {
@@ -75,20 +68,17 @@ Parser Either(const Parser &a, const Parser &b)
 	};
 }
 
-// Convenient operator syntax for `Either` combinator.
 Parser operator|(const Parser &a, const Parser &b)
 {
 	return Either(a, b);
 }
 
-// The zero parser that always fails.
 Parser zero = [](const iter start, const iter end) {
 	return []() {
 		return optional<iter>();
 	};
 };
 
-// The sum of a finite list of parsers.
 Parser Any(const vector<Parser> parsers)
 {
 	Parser p = zero;
@@ -99,7 +89,6 @@ Parser Any(const vector<Parser> parsers)
 	return p;
 }
 
-// The product ("and") of two parsers.
 Parser Both(const Parser &a, const Parser &b)
 {
 	return [a,b] (const iter start, const iter end) {
@@ -127,14 +116,11 @@ Parser Both(const Parser &a, const Parser &b)
 	};
 }
 
-// Convenient operator syntax for `Both` combinator.
 Parser operator&(const Parser &a, const Parser &b)
 {
 	return Both(a, b);
 }
 
-// The unit parser that only parses the empty string
-// (always succeeds but never makes any progress).
 Parser unit = [](const iter start, const iter end) {
 	bool done = false;
 	return [start,done]() mutable {
@@ -145,7 +131,6 @@ Parser unit = [](const iter start, const iter end) {
 	};
 };
 
-// The product of a finite list of parsers.
 Parser All(const vector<Parser> parsers)
 {
 	Parser p = unit;
@@ -156,8 +141,6 @@ Parser All(const vector<Parser> parsers)
 	return p;
 }
 
-// Returns true iff the string `s` can be parsed successfully
-// by parser `p` without residue.
 bool valid(const Parser &p, const std::string &s)
 {
 	Result_iter i = p(s.begin(), s.end());
