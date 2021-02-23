@@ -153,3 +153,24 @@ bool valid(const Parser &p, const std::string &s)
 	else
 		return false;
 }
+
+Parser operator ""_P(char c)
+{
+	return restrict(one_char, [c](const iter start, const iter end) { return *start == c;});
+}
+
+Parser operator ""_P(const char * s, size_t len)
+{
+	return [s,len](const iter start, const iter end) {
+		bool done = false;
+		bool found = string(start,end).rfind(s, 0, len) == 0;
+
+		return [done,found,len,start,end]() mutable {
+			if (!done && found) {
+				done = true;
+				return optional<iter>(start+len);
+			}
+			return optional<iter>();
+		};
+	};
+}

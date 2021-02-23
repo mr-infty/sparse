@@ -94,3 +94,9 @@ Parser All(const std::vector<Parser> parsers);
 // Returns true iff the string `s` can be parsed successfully
 // by parser `p` without residue.
 bool valid(const Parser &p, const std::string &s);
+
+// User-defined literal operator for parsing a given char.
+Parser operator ""_P(char);
+
+// User-defined literal operator for parsing a string literal.
+Parser operator ""_P(const char *, std::size_t);
