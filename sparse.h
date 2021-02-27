@@ -91,6 +91,13 @@ Parser All(const std::vector<Parser> &parsers);
 
 // CONVENIENCE FUNCTIONS.
 
+// eta expansion of Parser-valued expressions for conventient definition of
+// recursive parsers.
+//
+// E.g.: Parser ab = ETA(unit | 'a'_P & ab & 'b'_P & ab | 'b'_P & ab & 'a'_P
+// & ab);
+#define ETA(x) ([](iter start, iter end) { return (x)(start, end); })
+
 // Returns true iff the string `s` can be parsed successfully
 // by parser `p` without residue.
 bool valid(const Parser &p, const std::string &s);
