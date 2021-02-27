@@ -46,7 +46,7 @@
 // TYPE DEFINITIONS.
 typedef std::string::const_iterator iter;
 typedef std::function<std::optional<iter>()> Result_iter;
-typedef std::function<Result_iter(const iter, const iter)> Parser;
+typedef std::function<Result_iter(iter, iter)> Parser;
 
 // ELEMENTARY PARSERS.
 
@@ -69,7 +69,7 @@ extern Parser unit;
 // PARSER COMBINATORS.
 
 // Restricts a parser to only return results satisfying a predicate.
-Parser restrict(const Parser &parser, std::function<bool(const iter, const iter)> pred);
+Parser restrict(const Parser &parser, std::function<bool(iter, iter)> pred);
 
 // The sum ("or") of two parsers.
 Parser Either(const Parser &a, const Parser &b);
@@ -78,7 +78,7 @@ Parser Either(const Parser &a, const Parser &b);
 Parser operator|(const Parser &a, const Parser &b);
 
 // The sum of a finite list of parsers.
-Parser Any(const std::vector<Parser> parsers);
+Parser Any(const std::vector<Parser> &parsers);
 
 // The product ("and") of two parsers.
 Parser Both(const Parser &a, const Parser &b);
@@ -87,7 +87,7 @@ Parser Both(const Parser &a, const Parser &b);
 Parser operator&(const Parser &a, const Parser &b);
 
 // The product of a finite list of parsers.
-Parser All(const std::vector<Parser> parsers);
+Parser All(const std::vector<Parser> &parsers);
 
 // CONVENIENCE FUNCTIONS.
 

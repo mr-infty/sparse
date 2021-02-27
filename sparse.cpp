@@ -10,11 +10,11 @@ using std::vector;
 using std::string;
 using std::optional;
 
-Parser one_char = [](const iter start, const iter end)
+Parser one_char = [](iter start, iter end)
 {
 	bool done = false;
 
-	return [done,start,end]() mutable {
+	return [=]() mutable {
 		if (!done && start != end) {
 			done = true;
 			return optional<iter>(start+1);
@@ -23,12 +23,12 @@ Parser one_char = [](const iter start, const iter end)
 	};
 };
 
-Parser restrict(const Parser &parser, std::function<bool(const iter, const iter)> pred)
+Parser restrict(const Parser &parser, std::function<bool(iter, iter)> pred)
 {
-	return [parser,pred](const iter start, const iter end) {
+	return [=](iter start, iter end) {
 		Result_iter i = parser(start, end);
 
-		return [i,start,pred]() {
+		return [=]() {
 			for (optional<iter> res = i(); res; res = i())
 				if (pred(start, *res))
 					return res;
@@ -37,18 +37,18 @@ Parser restrict(const Parser &parser, std::function<bool(const iter, const iter)
 	};
 }
 
-Parser letter = restrict(one_char, [](const iter start, const iter end) { return std::isalpha(*start); });
+Parser letter = restrict(one_char, [](iter start, iter end) { return std::isalpha(*start); });
 
-Parser digit = restrict(one_char, [](const iter start, const iter end) { return std::isdigit(*start); });
+Parser digit = restrict(one_char, [](iter start, iter end) { return std::isdigit(*start); });
 
 Parser Either(const Parser &a, const Parser &b)
 {
-	return [a,b] (const iter start, const iter end) {
+	return [=] (iter start, iter end) {
 		Result_iter i = a(start, end);
 		bool exhausted_a = false;
 		bool exhausted_b = false;
 
-		return [b,i,exhausted_a,exhausted_b,start,end] () mutable {
+		return [=] () mutable {
 			while (!exhausted_b) {
 				optional<iter> j = i();
 
@@ -73,13 +73,13 @@ Parser operator|(const Parser &a, const Parser &b)
 	return Either(a, b);
 }
 
-Parser zero = [](const iter start, const iter end) {
+Parser zero = [](iter start, iter end) {
 	return []() {
 		return optional<iter>();
 	};
 };
 
-Parser Any(const vector<Parser> parsers)
+Parser Any(const vector<Parser> &parsers)
 {
 	Parser p = zero;
 
@@ -91,12 +91,12 @@ Parser Any(const vector<Parser> parsers)
 
 Parser Both(const Parser &a, const Parser &b)
 {
-	return [a,b] (const iter start, const iter end) {
+	return [=] (iter start, iter end) {
 		Result_iter iter_a = a(start, end);
 		optional<iter> start_b = iter_a();
 		optional<Result_iter> iter_b;
 
-		return [a,b,start,end,start_b,iter_a,iter_b] () mutable {
+		return [=] () mutable {
 			while (start_b) {
 				if (!iter_b)
 					iter_b = b(*start_b, end);
@@ -121,9 +121,9 @@ Parser operator&(const Parser &a, const Parser &b)
 	return Both(a, b);
 }
 
-Parser unit = [](const iter start, const iter end) {
+Parser unit = [](iter start, iter end) {
 	bool done = false;
-	return [start,done]() mutable {
+	return [=]() mutable {
 		if (done)
 			return optional<iter>();
 		done = true;
@@ -131,7 +131,7 @@ Parser unit = [](const iter start, const iter end) {
 	};
 };
 
-Parser All(const vector<Parser> parsers)
+Parser All(const vector<Parser> &parsers)
 {
 	Parser p = unit;
 
@@ -156,16 +156,16 @@ bool valid(const Parser &p, const std::string &s)
 
 Parser operator ""_P(char c)
 {
-	return restrict(one_char, [c](const iter start, const iter end) { return *start == c;});
+	return restrict(one_char, [c](iter start, iter end) { return *start == c;});
 }
 
 Parser operator ""_P(const char * s, size_t len)
 {
-	return [s,len](const iter start, const iter end) {
+	return [=](iter start, iter end) {
 		bool done = false;
 		bool found = string(start,end).rfind(s, 0, len) == 0;
 
-		return [done,found,len,start,end]() mutable {
+		return [=]() mutable {
 			if (!done && found) {
 				done = true;
 				return optional<iter>(start+len);
