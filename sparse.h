@@ -89,6 +89,19 @@ Parser operator&(const Parser &a, const Parser &b);
 // The product of a finite list of parsers.
 Parser All(const std::vector<Parser> &parsers);
 
+// Kleene *
+Parser ZeroOrMore(const Parser &);
+
+// Kleene +
+Parser OneOrMore(const Parser &);
+Parser operator +(const Parser &);
+
+// Kleene ?
+Parser ZeroOrOne(const Parser &);
+
+// The n-fold product of a parser with itself.
+Parser Pow(const Parser &, unsigned int);
+
 // CONVENIENCE FUNCTIONS.
 
 // eta expansion of Parser-valued expressions for conventient definition of

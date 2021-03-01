@@ -141,6 +141,36 @@ Parser All(const vector<Parser> &parsers)
 	return p;
 }
 
+Parser OneOrMore(const Parser &a)
+{
+	return a | OneOrMore(a);
+}
+
+Parser operator +(const Parser &a)
+{
+	return OneOrMore(a);
+}
+
+Parser ZeroOrMore(const Parser &a)
+{
+	return unit | OneOrMore(a);
+}
+
+Parser ZeroOrOne(const Parser &a)
+{
+	return unit | a;
+}
+
+Parser Power(const Parser &a, unsigned int n)
+{
+	if (n == 0)
+		return unit;
+	else if (n == 1)
+		return a;
+	else
+		return a & Power(a, n-1);
+}
+
 bool valid(const Parser &p, const std::string &s)
 {
 	Result_iter i = p(s.begin(), s.end());
